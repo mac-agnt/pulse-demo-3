@@ -631,7 +631,7 @@ const LOCATIONS = [
 ];
 
 const AGENT_DEFS = [
-  {id:"close", name:"Month-end close", shape:"rim-capsule", tint:"#1b2430", state:"working", group:true,
+  {id:"close", name:"Month-end close", shape:"rim-capsule", tint:"#3b5bdb", state:"working", group:true,
    members:["credit","briefing","ops"], role:"Credit Control, Briefing and Ops Watchdog working the same close",
    when:"09:12", preview:"credit control: three accounts still open.",
    thread:[
@@ -657,7 +657,7 @@ const AGENT_DEFS = [
      {kind:"user", text:"put the lease on Thursday"},
      {kind:"agent", text:"done — task created against Ballincollig depot, due Thursday, assigned to you. i'll remind you Wednesday afternoon."}
    ]},
-  {id:"credit", name:"Credit Control", shape:"executive-capsule", tint:"#2a2118", state:"waiting", role:"Watches payment behaviour and drafts the chase before you ask",
+  {id:"credit", name:"Credit Control", shape:"executive-capsule", tint:"#f2b632", state:"waiting", role:"Watches payment behaviour and drafts the chase before you ask",
    when:"Yesterday", preview:"three drafts parked. nothing sent.",
    thread:[
      {kind:"stamp", text:"Yesterday 16:40"},
@@ -665,7 +665,7 @@ const AGENT_DEFS = [
      {kind:"user", text:"what changed on dunne"},
      {kind:"agent", text:"days-to-pay went 12 → 74 since May while order volume held steady. that pattern is a cash problem, not a dispute. i'd offer two instalments to 30 September before putting them on stop again."}
    ]},
-  {id:"visits", name:"Visit Scout", shape:"low-dome", tint:"#241b2e", state:"working", role:"Keeps the site-visit board honest and chases unassigned work",
+  {id:"visits", name:"Visit Scout", shape:"low-dome", tint:"#7a5af0", state:"working", role:"Keeps the site-visit board honest and chases unassigned work",
    when:"Yesterday", preview:"thursday's depot check still has nobody on it.",
    thread:[
      {kind:"stamp", text:"Yesterday 07:00"},
@@ -673,19 +673,19 @@ const AGENT_DEFS = [
      {kind:"user", text:"give it to séamus"},
      {kind:"agent", text:"assigned. the module fired site-visits.visit.updated and the escalation automation stood down."}
    ]},
-  {id:"stock", name:"Stock Watch", shape:"control-cube", tint:"#16241f", state:"thinking", role:"Reorder points, supplier lead times and what Thursday's jobs actually need",
+  {id:"stock", name:"Stock Watch", shape:"tall-unit", tint:"#2fb57f", state:"thinking", role:"Reorder points, supplier lead times and what Thursday's jobs actually need",
    when:"Mon", preview:"two lines below reorder point before thursday.",
    thread:[
      {kind:"stamp", text:"Monday 11:20"},
      {kind:"agent", text:"two lines drop below reorder point before Thursday's jobs. Munster can cover both at the June agreement price — that's what PO-4471 is."}
    ]},
-  {id:"ops", name:"Ops Watchdog", shape:"shield", tint:"#2b1b1e", state:"attention", role:"Sits on the event queue and tells you when something stopped working",
+  {id:"ops", name:"Ops Watchdog", shape:"shield", tint:"#e8664a", state:"attention", role:"Sits on the event queue and tells you when something stopped working",
    when:"02:16", preview:"xero token expired. 148 invoices queued, nothing lost.",
    thread:[
      {kind:"stamp", text:"Today 02:16"},
      {kind:"agent", text:"the Xero connection failed at 02:14 — invalid_grant, token last authorised 27 February. 148 invoices are queued and post on reconnect. third time this year; move it to the service account."}
    ]},
-  {id:"counter", name:"Counter Assistant", shape:"offset-pebble", tint:"#191c1f", state:"working", role:"Answers trade-counter questions on price, stock and account status",
+  {id:"counter", name:"Counter Assistant", shape:"offset-pebble", tint:"#34a7d9", state:"working", role:"Answers trade-counter questions on price, stock and account status",
    when:"Fri", preview:"14 questions answered, 2 handed to niamh.",
    thread:[
      {kind:"stamp", text:"Friday 17:30"},
@@ -971,16 +971,88 @@ const STATE_LABELS = {working:"working", thinking:"thinking", waiting:"waiting o
   complete:"up to date", attention:"needs you", idle:"idle"};
 
 const FACE_SHAPES = [
-  ["crown-pebble","Crown pebble"],["executive-capsule","Executive capsule"],["shield","Shield"],
-  ["glass-visor","Glass visor"],["control-cube","Control cube"],["low-dome","Low dome"],
-  ["offset-pebble","Offset pebble"],["rim-capsule","Rim capsule"],["wide-eyed","Wide-eyed"],
-  ["precision-brow","Precision brow"],["tall-unit","Tall unit"],["soft-asymmetric","Soft asymmetric"]
+  ["crown-pebble","Dome"],["executive-capsule","Capsule"],["shield","Drop"],
+  ["glass-visor","Wide"],["control-cube","Block"],["low-dome","Mound"],
+  ["offset-pebble","Lying egg"],["rim-capsule","Lean"],["wide-eyed","Wide-eyed"],
+  ["precision-brow","Lying egg, left"],["tall-unit","Bean"],["soft-asymmetric","Pebble"]
 ];
-/* Shell colours only — deliberately desaturated so none of them reads as a
-   state. The eyes, rim and dots always carry the state colour. */
+/* Blob colours. State lives in the eyes' expression, never the colour. */
 const FACE_TINTS = [
-  ["#191c1f","Graphite"],["#1b2430","Slate"],["#241b2e","Aubergine"],
-  ["#2a2118","Bronze"],["#16241f","Pine"],["#2b1b1e","Oxblood"]
+  ["#191c1f","Ink"],["#3b5bdb","Cobalt"],["#e8664a","Coral"],["#2fb57f","Mint"],
+  ["#f2b632","Amber"],["#7a5af0","Violet"],["#e0527f","Rose"],["#34a7d9","Sky"]
+];
+
+/* Approvals waiting on people. Shared by Work and the Home workspace. */
+const APPROVALS = [
+  {id:"a1", title:"Purchase order PO-4471 — €14,280", subject:"Munster Plumbing Supplies · raised by Aoife Nolan", age:"18m", status:"awaiting you",
+   steps:[{who:"Aoife Nolan",state:"raised 08:54",dot:GREEN},{who:"Martin Kilbride",state:"pending",dot:AMBER}],
+   work:{kind:"table", label:"PURCHASE ORDER", viewLabel:"View order",
+     headline:"PO-4471 · Munster Plumbing Supplies", sub:"Delivery Thursday 18 Sep · terms 30 days",
+     cols:["Line","Qty","Unit","Total"], align:["left","right","right","right"],
+     rows:[["22mm copper tube — 3m","240","€38.40","€9,216.00"],
+           ["Compression elbow 22mm","400","€4.10","€1,640.00"],
+           ["Solder ring coupler 22mm","600","€2.85","€1,710.00"],
+           ["Flux paste 350g","60","€28.57","€1,714.00"]],
+     totals:[["Net","€14,280.00"],["VAT 23% (reverse charge)","€0.00"],["Payable","€14,280.00"]],
+     thinking:[["Checked stock levels","All four lines are below reorder point"],
+               ["Matched pricing","Unit prices equal the June supplier agreement"],
+               ["Checked commitments","Three lines are committed to Thursday's jobs"],
+               ["Checked threshold","€4,280 over Martin's sign-off limit, so it routed here"]],
+     tools:[["records.read","read"],["invoices.read","read"],["approvals.route","write"]],
+     risk:"No alternative supplier quote on file. Last price change was 14 June."}},
+  {id:"a2", title:"Credit limit increase — Casey Builders", subject:"€10,000 → €18,000 · raised by Niamh Cronin", age:"Yesterday", status:"awaiting you",
+   steps:[{who:"Niamh Cronin",state:"raised 16:02",dot:GREEN},{who:"Aoife Nolan",state:"approved 16:40",dot:GREEN},{who:"Martin Kilbride",state:"pending",dot:AMBER}],
+   work:{kind:"diff", label:"RECORD CHANGE", viewLabel:"View change",
+     headline:"Casey Builders Ltd · account CB-0142", sub:"Three fields change on approval, one unchanged",
+     diff:[["Credit limit","€10,000","€18,000"],["Terms","30 days","45 days"],["Risk band","B","B"],["Reviewed","14 Mar 2026","Today"]],
+     thinking:[["Read payment history","24 invoices, 22 paid on time, average 27 days"],
+               ["Checked exposure","Current balance €7,400 — 74% of the existing limit"],
+               ["Checked open work","€21k of quoted work would be blocked by the current limit"],
+               ["Checked policy","Increases above €15,000 need your decision"]],
+     tools:[["records.read","read"],["invoices.read","read"],["records.update","write"]],
+     risk:"One late payment in February, 19 days over. Cleared in full."}},
+  {id:"a4", title:"Proposal — Ballincollig retrofit €62,400", subject:"Drafted by Helios · raised by Niamh Cronin", age:"3h", status:"awaiting you",
+   steps:[{who:"Niamh Cronin",state:"raised 06:10",dot:GREEN},{who:"Martin Kilbride",state:"pending",dot:AMBER}],
+   work:{kind:"doc", label:"PROPOSAL · 4 PAGES", viewLabel:"Read proposal",
+     headline:"Heating retrofit — Ballincollig depot", sub:"Prepared for Casey Builders Ltd · valid 30 days",
+     doc:[["Scope","Replace the depot's two oil boilers with a cascaded air-source system, re-balance the existing circuit and fit weather compensation controls. Work is phased over two weekends so the yard keeps running."],
+          ["Approach","Week one strips the plant room and lands the new units on the existing plinth. Week two commissions the cascade and hands over with a 12-month monitoring window."],
+          ["Commercials","€62,400 fixed price, 30% on order, 40% on plant delivery, 30% on handover. Excludes making good to the render."],
+          ["Why us","We hold the maintenance contract on the Glanmire site and carry the same plant in stock, so lead time is three weeks rather than nine."]],
+     totals:[["Plant","€38,900.00"],["Labour","€18,100.00"],["Controls and commissioning","€5,400.00"],["Total","€62,400.00"]],
+     thinking:[["Pulled the site record","Two oil boilers, 2009, last serviced March"],
+               ["Priced from live stock","Plant is in stock at the Cork branch"],
+               ["Reused past wording","Lifted scope language from the Glanmire proposal you approved"],
+               ["Left a gap","No allowance for asbestos survey — flagged below"]],
+     tools:[["records.read","read"],["files.read","read"],["email.send","external"]],
+     risk:"No asbestos survey allowance. If the plant room needs one, add roughly €1,200."}},
+  {id:"a5", title:"Payment run — 14 suppliers €48,920", subject:"Scheduled by Cash Watch · Friday 19 Sep", age:"1h", status:"awaiting you",
+   steps:[{who:"Cash Watch",state:"proposed 09:40",dot:GREEN},{who:"Martin Kilbride",state:"pending",dot:AMBER}],
+   work:{kind:"table", label:"PAYMENT RUN", viewLabel:"View run",
+     headline:"Run PR-0238 · 14 payments", sub:"Leaves the AIB current account on Friday 19 Sep",
+     cols:["Supplier","Due","Invoices","Amount"], align:["left","left","right","right"],
+     rows:[["Munster Plumbing Supplies","19 Sep","3","€18,240.00"],
+           ["Tyrrell Insulation","19 Sep","1","€9,110.00"],
+           ["Kelleher Haulage","20 Sep","4","€7,480.00"],
+           ["Cork Electrical Wholesale","19 Sep","2","€6,300.00"],
+           ["10 others","19–24 Sep","11","€7,790.00"]],
+     totals:[["Run total","€48,920.00"],["Account balance after","€61,380.00"],["Held back","€2,410.00"]],
+     thinking:[["Read the ledger","31 invoices due inside seven days"],
+               ["Held two back","Tyrrell credit note unresolved, Dineen job in dispute"],
+               ["Checked the balance","Run leaves €61,380, above your €50k floor"],
+               ["Checked mandates","All 14 have current SEPA mandates on file"]],
+     tools:[["invoices.read","read"],["payments.read","read"],["bank.payment.create","external"]],
+     risk:"Two invoices held back total €2,410. They will age past 60 days if not paid next run."}},
+  {id:"a3", title:"Write-off — INV-10233 €412", subject:"Glanmire Mechanical · raised by Aoife Nolan", age:"2 days", status:"approved",
+   steps:[{who:"Aoife Nolan",state:"raised",dot:GREEN},{who:"Martin Kilbride",state:"approved",dot:GREEN}],
+   work:{kind:"diff", label:"WRITE-OFF", viewLabel:"View write-off",
+     headline:"INV-10233 · Glanmire Mechanical", sub:"Two fields change on approval",
+     diff:[["Status","Past due 94 days","Written off"],["Balance","€412.00","€0.00"]],
+     thinking:[["Checked the age","94 days past due, three chases sent"],
+               ["Checked the account","Company dissolved 12 August"],
+               ["Checked the amount","Below your €500 write-off threshold"]],
+     tools:[["invoices.read","read"],["invoices.update","write"]],
+     risk:"None. The counterparty no longer exists."}}
 ];
 
 /* ---- ontology graph: generation, Dijkstra traversal, canvas render ---- */
@@ -1250,6 +1322,7 @@ export {
   STATE_LABELS,
   FACE_SHAPES,
   FACE_TINTS,
+  APPROVALS,
   CLUSTERS,
   mulberry,
   _hexCache,

@@ -1,0 +1,124 @@
+/* Liquid glass: the material, the wallpaper it sits on, and the dock.
+   A web approximation of Apple's Liquid Glass. GlassLens does the refraction
+   and frost; .lg adds the lit rim, inner glow and lift. */
+
+.lg-wallpaper{position:fixed;inset:0;z-index:0;pointer-events:none;background:#6c97cf;overflow:hidden}
+.lg-wallpaper img{display:block;width:100%;height:100%;object-fit:cover}
+
+/* Light theme: the same glass, frosted white instead of smoked. */
+[data-theme="light"]{--panel:transparent;--lg-tint:rgba(255,255,255,.42);--lg-tint-strong:rgba(255,255,255,.7);
+  --lg-window-tint:rgba(255,255,255,.58);--lg-composer-tint:rgba(255,255,255,.66);--lg-name:#0071e3;
+  --lg-thumb:rgba(255,255,255,.75);--lg-thumb-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 2px 8px rgba(20,30,60,.12);
+  --lg-well:rgba(255,255,255,.4);--lg-well-shadow:inset 0 1px 2px rgba(20,30,60,.1)}
+[data-theme="light"] .lg-chip{background:rgba(255,255,255,.5);color:var(--body)}
+[data-theme="light"] .lg-chip:hover{background:rgba(255,255,255,.72)}
+[data-theme="light"] .lg-dock-item[data-active="1"],[data-theme="light"] .lg-dock-launch:hover,[data-theme="light"] .lg-dock-item:hover{background:rgba(255,255,255,.6)}
+[data-theme="light"] .lg-dock-divider{background:rgba(20,30,60,.18)}
+[data-theme="light"] .lg-grabber{background:rgba(20,30,60,.22)}
+
+/* ── The material ─────────────────────────────────────────────────────── */
+.lg{position:relative;isolation:isolate;background:none;border:0;
+  box-shadow:inset 0 1px 1px rgba(255,255,255,.28),inset 0 -1px 1px rgba(255,255,255,.07),inset 0 0 24px rgba(255,255,255,.04),0 14px 40px rgba(2,10,40,.28),0 2px 6px rgba(2,10,40,.14)}
+/* Specular rim: bright where light hits the top-left and bottom-right edges. */
+.lg::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;padding:1px;z-index:2;
+  background:linear-gradient(140deg,rgba(255,255,255,.62) 0%,rgba(255,255,255,.16) 22%,rgba(255,255,255,.04) 45%,rgba(255,255,255,.04) 58%,rgba(255,255,255,.16) 80%,rgba(255,255,255,.46) 100%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+/* Soft light pooled along the top inner edge. */
+.lg::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;
+  background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,0) 38%)}
+.lg > *{position:relative;z-index:1}
+.lg > span[aria-hidden="true"]:first-child{position:absolute;z-index:-1}
+
+/* Glass chips and small controls (no lens: too small to show refraction). */
+.lg-chip{position:relative;display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 14px;border:0;border-radius:999px;
+  background:rgba(96,108,132,.34);color:var(--body);font-size:12.5px;font-weight:500;cursor:pointer;white-space:nowrap;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -1px 0 rgba(255,255,255,.05),0 2px 8px rgba(2,10,40,.12);
+  transition:background .2s var(--ease),color .2s var(--ease),transform .18s var(--ease)}
+.lg-chip:hover{background:rgba(130,142,166,.42);color:var(--ink)}
+.lg-chip:active{transform:scale(.97)}
+.lg-chip:focus-visible,.lg-dock-launch:focus-visible,.lg-dock-item:focus-visible,.lg-send:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.lg-send{flex:none;width:36px;height:36px;border:0;border-radius:999px;background:var(--accent);color:#f5f7fa;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 -1px 0 rgba(0,0,0,.12),0 4px 14px rgba(10,132,255,.4);
+  transition:transform .18s var(--ease),background .2s var(--ease)}
+.lg-send:hover{background:var(--accent-hover)}
+.lg-send:active{transform:scale(.94)}
+
+/* ── Chrome-wide glass: cards painted with the theme's glass tokens get real frost. */
+[data-theme="harbour"] [style*="background: var(--surface);"],
+[data-theme="harbour"] [style*="background: var(--surface-strong);"],
+[data-theme="harbour"] [style*="background: var(--overlay);"],
+[data-theme="harbour"] [style*="background: var(--records-card);"],
+[data-theme="harbour"] [style*="background: var(--kpi-card);"],
+[data-theme="harbour"] [style*="background: var(--tooltip);"]{
+  -webkit-backdrop-filter:blur(16px) saturate(1.6) !important;backdrop-filter:blur(16px) saturate(1.6) !important}
+[data-theme="harbour"] ::selection{background:rgba(10,132,255,.45)}
+
+/* ── The dock ─────────────────────────────────────────────────────────── */
+.lg-dock{position:fixed;left:20px;bottom:20px;z-index:48}
+.lg-dock-tray{display:flex;flex-direction:column-reverse;align-items:center;gap:4px;width:60px;padding:6px;border-radius:30px;overflow:hidden;
+  transition:height .52s cubic-bezier(.32,1.24,.42,1)}
+.lg-dock-launch,.lg-dock-item{flex:none;width:48px;height:48px;border:0;border-radius:999px;background:none;color:var(--ink);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:background .2s var(--ease),color .2s var(--ease),transform .18s var(--ease)}
+.lg-dock-launch{position:relative}
+.lg-dock-launch:hover,.lg-dock-item:hover{background:rgba(255,255,255,.12)}
+.lg-dock-launch:active,.lg-dock-item:active{transform:scale(.92)}
+.lg-dock-grid,.lg-dock-close{position:absolute;transition:transform .42s cubic-bezier(.32,1.24,.42,1),opacity .22s var(--ease)}
+.lg-dock-close{opacity:0;transform:rotate(-90deg) scale(.6)}
+.lg-dock[data-open="1"] .lg-dock-grid{opacity:0;transform:rotate(90deg) scale(.6)}
+.lg-dock[data-open="1"] .lg-dock-close{opacity:1;transform:none}
+.lg-dock-item{position:relative;color:var(--body);opacity:0;transform:translateY(10px);
+  transition:opacity .28s var(--ease),transform .42s cubic-bezier(.32,1.24,.42,1),background .2s var(--ease),color .2s var(--ease)}
+.lg-dock[data-open="1"] .lg-dock-item{opacity:1;transform:none}
+.lg-dock-item[data-active="1"]{background:rgba(255,255,255,.16);color:var(--accent);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.28),inset 0 -1px 0 rgba(255,255,255,.06)}
+.lg-dock-dot{position:absolute;top:11px;right:11px;width:7px;height:7px;border-radius:999px;background:var(--bad);box-shadow:0 0 0 2px rgba(20,28,46,.5)}
+.lg-dock-divider{flex:none;width:26px;height:1px;margin:2px 0 6px;background:rgba(255,255,255,.2);opacity:0;transition:opacity .28s var(--ease)}
+.lg-dock[data-open="1"] .lg-dock-divider{opacity:1}
+.lg-dock-tip{position:absolute;left:72px;transform:translateY(50%);height:30px;display:flex;align-items:center;padding:0 12px;border-radius:12px;
+  font-size:12.5px;font-weight:500;color:var(--ink);white-space:nowrap;pointer-events:none;animation:lgTip .22s cubic-bezier(.32,1.24,.42,1) both}
+@keyframes lgTip{from{opacity:0;transform:translate(-4px,50%)}to{opacity:1;transform:translate(0,50%)}}
+
+/* ── Home window ──────────────────────────────────────────────────────── */
+.lg-window{display:flex;flex-direction:column;min-height:0;border-radius:30px;overflow:hidden}
+.lg-grabber{flex:none;align-self:center;width:38px;height:5px;margin-top:9px;border-radius:999px;background:rgba(255,255,255,.34)}
+.lg-composer{display:flex;align-items:flex-end;gap:10px;padding:8px 8px 8px 8px;border-radius:28px}
+.lg-composer textarea{flex:1;min-width:0;border:0;outline:0;resize:none;background:none;font-size:15px;line-height:1.5;padding:8px 0;max-height:120px;overflow-y:hidden;scrollbar-width:none;color:var(--ink)}
+.lg-composer textarea::placeholder{color:var(--faint)}
+
+@media (prefers-reduced-motion:reduce){
+  .lg-dock-tray,.lg-dock-item,.lg-dock-grid,.lg-dock-close,.lg-dock-divider{transition:none}
+  .lg-dock-tip{animation:none}
+}
+.lg-window-foot{overflow-x:auto;scrollbar-width:none}
+.lg-window-foot::-webkit-scrollbar{display:none}
+.lg-window-foot > *{flex-shrink:0}
+/* Narrow screens: the ask bar steps right so the dock button never covers it. */
+@media (max-width:900px){
+  .lg-composer-wrap{padding-left:62px}
+}
+@media (max-width:640px){
+  .lg-dock{left:12px;bottom:12px}
+  .lg-composer-wrap{padding-left:52px}
+}
+
+/* ── Wallpaper picker ─────────────────────────────────────────────────── */
+.lg-wallpaper-img{animation:lgWpIn .6s ease both}
+@keyframes lgWpIn{from{opacity:0}to{opacity:1}}
+.wp-btn{width:42px;height:42px;border:0;border-radius:999px;background:none;cursor:pointer;color:var(--dim);display:flex;align-items:center;justify-content:center;transition:background .2s var(--ease),color .2s var(--ease)}
+.wp-btn[aria-expanded="true"]{background:rgba(255,255,255,.14);color:var(--ink)}
+.wp-sheet{position:fixed;z-index:70;width:348px;padding:14px;border-radius:22px;animation:popIn .26s var(--ease) both}
+.wp-title{font-size:13px;font-weight:600;color:var(--ink);padding:0 2px 10px}
+.wp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.wp-item{display:flex;flex-direction:column;gap:6px;padding:0;border:0;background:none;cursor:pointer;color:var(--body);font:inherit;text-align:left}
+.wp-thumb{display:block;aspect-ratio:16/10;border-radius:12px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.14),0 4px 12px rgba(2,10,40,.25);transition:box-shadow .2s var(--ease),transform .18s var(--ease)}
+.wp-thumb img{display:block;width:100%;height:100%;object-fit:cover}
+.wp-item:hover .wp-thumb{transform:translateY(-1px)}
+.wp-item[aria-pressed="true"] .wp-thumb{box-shadow:0 0 0 2px var(--accent),0 4px 14px rgba(10,132,255,.35)}
+.wp-item:focus-visible{outline:none}
+.wp-item:focus-visible .wp-thumb{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--accent)}
+.wp-name{font-size:12px;font-weight:500;padding-left:2px}
+.wp-item[aria-pressed="true"] .wp-name{color:var(--ink)}
+@media (prefers-reduced-motion:reduce){.lg-wallpaper-img,.wp-sheet{animation:none}}

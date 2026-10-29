@@ -1,12 +1,13 @@
 import { Fragment } from "react";
 import { arr, cat, css, cx, txt } from "../../runtime/template";
+import NeuralMap from "../../components/neural/NeuralMap";
 
 type Props = { v: any };
 
 export default function RecordsOntology({ v }: Props) {
   return (
     <>
-      <div style={{"display":"flex","gap":"14px","alignItems":"stretch","height":"calc(100vh - 112px)","minHeight":"600px"}}>
+      <div style={{"display":"flex","gap":"14px","alignItems":"stretch","height":"calc(100vh - 208px)","minHeight":"600px"}}>
         <div style={{"flex":"none","width":"252px","display":"flex","flexDirection":"column","gap":"10px","minWidth":"0","overflowY":"auto","scrollbarWidth":"none"}}>
           <div style={{"padding":"14px 16px","background":"var(--surface)","border":"1px solid var(--border)","borderRadius":"var(--card-r,18px)","backdropFilter":"blur(20px) saturate(1.3)","boxShadow":"var(--card-shadow)"}}>
             <div style={{"fontFamily":"var(--mono)","fontSize":"9px","letterSpacing":"0.13em","color":"var(--faint)"}}>
@@ -157,12 +158,7 @@ export default function RecordsOntology({ v }: Props) {
           </button>
         </div>
         <div style={{"position":"relative","flex":"1","minWidth":"0","background":"var(--surface)","border":"1px solid var(--border)","borderRadius":"var(--card-r,18px)","backdropFilter":"blur(20px) saturate(1.3)","boxShadow":"var(--card-shadow)","overflow":"hidden"}}>
-          <div style={{"position":"absolute","left":"50%","top":"-18%","width":"132%","height":"150%","transform":"translateX(-50%)","pointerEvents":"none","filter":"blur(74px)","opacity":".20","animation":"bloomDrift 26s ease-in-out infinite"}}>
-            <div style={{"position":"absolute","left":"4%","top":"26%","width":"52%","height":"56%","borderRadius":"var(--r-sm,9px)","background":"var(--bloom-a)"}} />
-            <div style={{"position":"absolute","left":"40%","top":"10%","width":"46%","height":"52%","borderRadius":"var(--r-sm,9px)","background":"var(--bloom-b)"}} />
-            <div style={{"position":"absolute","left":"24%","top":"48%","width":"50%","height":"50%","borderRadius":"var(--r-sm,9px)","background":"var(--bloom-c)"}} />
-          </div>
-          <canvas data-onto-graph="1" style={{"position":"absolute","inset":"0","width":"100%","height":"100%","display":"block"}} />
+          <NeuralMap scene={v.graph?.scene} counts={arr(v.graph?.legend).map((l: any) => String(l?.count ?? ""))} />
         </div>
       </div>
     </>

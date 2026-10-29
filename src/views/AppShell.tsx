@@ -2,6 +2,10 @@ import { Fragment } from "react";
 import { arr, cat, css, cx, txt } from "../runtime/template";
 import AgentFace from "../components/AgentFace";
 import NavThumb from "../components/NavThumb";
+import GlassDock from "../components/GlassDock";
+import GlassLens from "../components/GlassLens";
+import LiquidWallpaper from "../components/LiquidWallpaper";
+import WallpaperPicker from "../components/WallpaperPicker";
 import DashboardKpiBand from "./pages/DashboardKpiBand";
 import Home from "./pages/Home";
 import Work from "./pages/Work";
@@ -24,148 +28,12 @@ type Props = { v: any };
 export default function AppShell({ v }: Props) {
   return (
     <>
-    <div data-theme={v.theme} style={{"fontFamily":"var(--ui)","position":"relative","display":"flex","height":"100vh","overflow":"hidden","background":"var(--bg)","color":"var(--ink)",...v.rootVars}}>
+    <div data-theme={v.theme} style={{"fontFamily":"var(--ui)","position":"relative","display":"flex","height":"100vh","overflow":"hidden","background":"var(--bg)","isolation":"isolate","color":"var(--ink)",...v.rootVars}}>
       <div style={{"position":"absolute","width":"1px","height":"1px","overflow":"hidden","opacity":"0","pointerEvents":"none"}}>
         <AgentFace shape={"crown-pebble"} state={"idle"} tint={"#191c1f"} size={"1"} />
       </div>
-      <nav data-rail-nav="1" style={css(v.railOuter)}>
-        <span style={css(v.railThumbStyle)} />
-        <div style={css(cat(v.railRowStyle, "margin-bottom:22px"))}>
-          <button className={cx("ix0", "ix1")} onClick={v.toggleRail} title={v.railLabel} style={{"width":"36px","height":"36px","flex":"none","border":"0","borderRadius":"var(--cta-r,11px)","background":"var(--accent-fill,var(--accent))","color":"var(--on-accent)","boxShadow":"var(--accent-glow,none)","cursor":"pointer","display":"flex","alignItems":"center","justifyContent":"center","fontSize":"13px","fontWeight":"600","padding":"0","transition":"transform .2s var(--ease)"}}>
-            {"K"}
-          </button>
-          <span style={css(v.brandStyle)}>
-            <span style={{"display":"block","fontSize":"15px","fontWeight":"600","letterSpacing":"-.3px","color":"var(--ink)"}}>
-              {"Kilbride Group"}
-            </span>
-            <span style={{"display":"block","marginTop":"2px","fontSize":"9px","fontWeight":"500","letterSpacing":".16em","color":"var(--accent)"}}>
-              {"PULSE · OPERATIONS"}
-            </span>
-          </span>
-          {v.railOpen && (
-            <>
-              <button className="ix2" onClick={v.toggleRail} title={v.railLabel} style={{"width":"28px","height":"28px","flex":"none","border":"0","borderRadius":"var(--r-ctl,10px)","background":"none","color":"var(--mid)","cursor":"pointer","display":"flex","alignItems":"center","justifyContent":"center","transition":"background .2s var(--ease),color .2s var(--ease)"}}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M4 6h16 M4 12h10 M4 18h16" />
-                </svg>
-              </button>
-            </>
-          )}
-        </div>
-        {arr(v.nav).map((item: any, i0: number) => (
-          <Fragment key={i0}>
-            {item?.isDivider && (
-              <>
-                <div style={{"width":"20px","height":"1px","background":"var(--track)","margin":"7px 0"}} />
-              </>
-            )}
-            {item?.isItem && (
-              <>
-                <button className="ix3" data-rail={item?.railKey} onClick={item?.go} onPointerEnter={item?.enter} onPointerLeave={item?.leave} style={css(item?.style)}>
-                  <span style={{"position":"relative","flex":"none","width":"17px","height":"17px","display":"flex","alignItems":"center","justifyContent":"center"}}>
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={css(item?.glyphStyle)}>
-                      <path d={item?.d} />
-                    </svg>
-                  </span>
-                  {item?.dot && (
-                    <>
-                      <span style={css(item?.dotStyle)} />
-                    </>
-                  )}
-                  <span style={css(item?.inlineStyle)}>
-                    {txt(item?.label)}
-                  </span>
-                  {item?.hint && (
-                    <>
-                      <span style={css(item?.hintStyle)}>
-                        {txt(item?.hint)}
-                      </span>
-                    </>
-                  )}
-                </button>
-              </>
-            )}
-          </Fragment>
-        ))}
-        <div style={{"flex":"1","minHeight":"10px"}} />
-        {v.railOpen && (
-          <>
-            <div style={{"margin":"6px 4px 4px","padding":"18px 18px 16px","background":"var(--surface)","border":"1px solid var(--border)","borderRadius":"18px"}}>
-              <div style={{"fontSize":"11px","fontWeight":"600","letterSpacing":".12em","color":"var(--faint)"}}>
-                {"SIGNED IN"}
-              </div>
-              <div style={{"display":"flex","alignItems":"center","gap":"11px","marginTop":"12px"}}>
-                <div style={{"width":"40px","height":"40px","flex":"none","borderRadius":"999px","background":"var(--accent-soft)","color":"var(--accent)","display":"flex","alignItems":"center","justifyContent":"center","fontSize":"13px","fontWeight":"600"}}>
-                  {"MK"}
-                </div>
-                <div style={{"minWidth":"0"}}>
-                  <div style={{"fontSize":"17px","fontWeight":"600","letterSpacing":"-.3px","color":"var(--ink)","whiteSpace":"nowrap","overflow":"hidden","textOverflow":"ellipsis"}}>
-                    {"Martin Kilbride"}
-                  </div>
-                  <div style={{"fontSize":"12.5px","color":"var(--faint)","marginTop":"2px","whiteSpace":"nowrap","overflow":"hidden","textOverflow":"ellipsis"}}>
-                    {"Kilbride Group · Owner"}
-                  </div>
-                </div>
-              </div>
-              <button className="ix4" onClick={v.goSettings} onPointerEnter={v.setBtnIn} onPointerLeave={v.setBtnOut} style={{"position":"relative","width":"100%","height":"46px","marginTop":"16px","display":"flex","alignItems":"center","gap":"10px","padding":"0 5px 0 16px","background":"var(--surface-2)","border":"1px solid var(--border)","borderRadius":"999px","color":"var(--ink)","fontSize":"14px","fontWeight":"600","letterSpacing":"-.1px","cursor":"pointer","overflow":"hidden","isolation":"isolate","boxShadow":"0 1px 0 rgba(255,255,255,.05) inset,0 2px 8px rgba(0,0,0,.18)","transition":"border-color .4s var(--ease)"}}>
-                <span style={css(v.setDotStyle)} />
-                <span style={css(v.setSheen)} />
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" style={css(v.setIconStyle)}>
-                  <path d="M5.5 4v16 M12 4v16 M18.5 4v16" opacity=".45" />
-                  <path d="M3 12.5h5" style={css(v.setKnobA)} />
-                  <path d="M9.5 5.5h5" style={css(v.setKnobB)} />
-                  <path d="M16 14h5" style={css(v.setKnobC)} />
-                </svg>
-                <span style={{"position":"relative","zIndex":"2","flex":"1","textAlign":"left"}}>
-                  {"Settings"}
-                </span>
-                <span style={{"position":"relative","zIndex":"2","flex":"none","width":"36px","height":"36px","borderRadius":"999px","overflow":"hidden","color":"var(--accent)"}}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={css(v.setArrowA)}>
-                    <path d="M5 12h14 M13 6l6 6-6 6" />
-                  </svg>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={css(v.setArrowB)}>
-                    <path d="M5 12h14 M13 6l6 6-6 6" />
-                  </svg>
-                </span>
-              </button>
-            </div>
-          </>
-        )}
-        {v.railShut && (
-          <>
-            <button className="ix5" onClick={v.goSettings} onPointerEnter={v.enterSettings} onPointerLeave={v.leaveSettings} style={css(v.settingsStyle)}>
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={css(v.settingsGlyphStyle)}>
-                <path d="M5.5 20v-5.5 M5.5 9.5V4 M12 20v-7.5 M12 7.5V4 M18.5 20v-4 M18.5 11V4 M3 12.5h5 M9.5 5.5h5 M16 14h5" />
-              </svg>
-              <span style={css(v.settingsInlineStyle)}>
-                {"Settings"}
-              </span>
-            </button>
-            <div style={css(cat(v.railRowStyle, "margin-top:10px;padding:12px 10px;border-top:1px solid var(--border)"))}>
-              <div style={{"width":"40px","height":"40px","flex":"none","borderRadius":"12px","background":"var(--surface-2)","border":"1px solid var(--border)","color":"var(--body)","display":"flex","alignItems":"center","justifyContent":"center","fontSize":"12px","fontWeight":"600","cursor":"pointer"}}>
-                {"MK"}
-              </div>
-              <span style={css(v.brandStyle)}>
-                <span style={{"display":"block","fontSize":"14px","fontWeight":"500","color":"var(--ink)"}}>
-                  {"Martin Kilbride"}
-                </span>
-                <span style={{"display":"block","marginTop":"2px","fontSize":"12px","color":"var(--faint)"}}>
-                  {"Kilbride Group · Owner"}
-                </span>
-              </span>
-            </div>
-          </>
-        )}
-      </nav>
-      <span style={css(v.hoverLabel?.style)}>
-        <span style={{"position":"absolute","left":"-4px","top":"50%","width":"8px","height":"8px","background":"var(--tooltip)","borderLeft":"1px solid var(--border)","borderBottom":"1px solid var(--border)","transform":"translateY(-50%) rotate(45deg)"}} />
-        <span style={{"width":"5px","height":"5px","borderRadius":"50%","background":"var(--accent)"}} />
-        {txt(v.hoverLabel?.label)}
-        <span style={{"opacity":".6"}}>
-          {txt(v.hoverLabel?.hint)}
-        </span>
-      </span>
-      <main style={css(cat("--page-dy:", v.pageDy, ";position:relative;z-index:1;flex:1;min-width:0;display:flex;flex-direction:column;margin:16px 16px 16px 0;background:var(--panel,#0f1316);border:1px solid var(--border);border-radius:28px;overflow:hidden;box-shadow:0 1px 0 rgba(255,255,255,.03) inset"))}>
+      <LiquidWallpaper />
+      <main style={css(cat("--page-dy:", v.pageDy, ";position:relative;z-index:1;flex:1;min-width:0;display:flex;flex-direction:column;background:var(--panel,#0f1316);overflow:hidden"))}>
         {"\n"}
         {txt(v.pageSweepEl)}
         {"\n"}
@@ -174,10 +42,10 @@ export default function AppShell({ v }: Props) {
             <div style={{"position":"absolute","left":"0","top":"0","right":"0","height":"660px","zIndex":"0","pointerEvents":"none","background":"var(--hero-grad)","WebkitMaskImage":"linear-gradient(180deg,rgba(0,0,0,.82) 0%,#000 18%,#000 72%,rgba(0,0,0,0) 100%)","maskImage":"linear-gradient(180deg,rgba(0,0,0,.82) 0%,#000 18%,#000 72%,rgba(0,0,0,0) 100%)"}} />
           </>
         )}
-        <div style={{"position":"absolute","left":"0","right":"0","bottom":"0","height":"64px","zIndex":"3","pointerEvents":"none","maskImage":"linear-gradient(0deg,#000 0%,transparent 100%)","WebkitMaskImage":"linear-gradient(0deg,#000 0%,transparent 100%)","background":"linear-gradient(0deg,var(--bg) 0%,rgba(0,0,0,0) 100%)","opacity":".85"}} />
         <div style={css(v.headerFieldStyle)} />
-        <header style={{"position":"relative","zIndex":"4","flex":"none","width":"100%","padding":"18px 28px","boxSizing":"border-box","borderBottom":"1px solid var(--border)"}}>
-          <div style={css(v.headerPillStyle)}>
+        <header style={{"position":"relative","zIndex":"4","flex":"none","width":"100%","padding":"18px 28px","boxSizing":"border-box"}}>
+          <div className="lg" style={css(v.headerPillStyle)}>
+            <GlassLens radius={27} blur={14} />
             {v.isAgents && (
               <>
                 <div style={{"flex":"0 0 auto","display":"flex","alignItems":"center","gap":"9px","padding":"0 8px 0 5px"}}>
@@ -270,6 +138,7 @@ export default function AppShell({ v }: Props) {
               <>
                 <div style={{"width":"1px","height":"18px","flex":"none","margin":"0 4px","background":"var(--border)"}} />
                 <div style={{"flex":"0 0 auto","display":"flex","alignItems":"center","gap":"2px","padding":"0 3px"}}>
+                  <WallpaperPicker />
                   {v.showTheme && (
                     <>
                       <button className="ix2" onClick={v.toggleTheme} title={v.themeLabel} style={{"width":"42px","height":"42px","border":"0","borderRadius":"999px","background":"none","cursor":"pointer","color":"var(--dim)","display":"flex","alignItems":"center","justifyContent":"center","transition":"background .2s var(--ease),color .2s var(--ease)"}}>
@@ -387,7 +256,7 @@ export default function AppShell({ v }: Props) {
           </>
         )}
         {v.isDashboard && <DashboardKpiBand v={v} />}
-        <div data-scroll-main="1" style={{"flex":"1","minHeight":"0","overflowY":"auto","overflowX":"hidden","scrollbarWidth":"none"}}>
+        <div data-scroll-main="1" style={{"flex":"1","minHeight":"0","overflowY":"auto","overflowX":"hidden","scrollbarWidth":"none","padding":v.isChat ? "0" : v.rec?.isOntology ? "0 14px" : "0 14px 88px","boxSizing":"border-box"}}>
           {v.isChat && <Home v={v} />}
           {v.isWork && <Work v={v} />}
           {v.isRecords && <Records v={v} />}
@@ -580,6 +449,7 @@ export default function AppShell({ v }: Props) {
           {v.isAgents && <Agents v={v} />}
         </div>
       </main>
+      <GlassDock items={arr(v.nav)} settingsActive={!!v.isSettings} onSettings={v.goSettings} />
       {v.showFab && (
         <>
           <button className={cx("ix18", "ixo")} onClick={v.toggleMini} title={v.fabTitle} style={{"position":"fixed","right":"26px","bottom":"26px","zIndex":"47","width":"56px","height":"56px","border":"1px solid var(--accent-line)","borderRadius":"var(--cta-r,14px)","background":"var(--accent-fill,var(--accent))","color":"var(--on-accent)","boxShadow":"0 14px 34px rgba(0,0,0,.34)","cursor":"pointer","display":"flex","alignItems":"center","justifyContent":"center","transition":"transform .3s var(--ease),box-shadow .3s var(--ease)"}}>

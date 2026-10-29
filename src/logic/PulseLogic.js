@@ -60,6 +60,7 @@ import {
   STATE_LABELS,
   FACE_SHAPES,
   FACE_TINTS,
+  APPROVALS,
   CLUSTERS,
   mulberry,
   hexRGB,
@@ -75,6 +76,8 @@ import {
 const ONTOLOGY_SECTION = {id:"ontology", label:"Ontology", blurb:"How every record connects: entities, predicates and the paths between them."};
 const REC_SECTIONS = [REC_SECTIONS_RAW.find(s => s.id === "ontology") || ONTOLOGY_SECTION]
   .concat(REC_SECTIONS_RAW.filter(s => s.id !== "ontology"));
+/* The side rail is now a dock that floats over the page, so it takes no width. */
+const RAIL_W = 0;
 const NAV = (() => {
   const items = NAV_RAW.filter(n => n.page !== "Home" && n.page !== "Agents");
   const home = NAV_RAW.find(n => n.page === "Home") || {label:"Home", icon:"helios", page:"Home"};
@@ -1166,7 +1169,6 @@ export default class PulseLogic extends DCLogic {
     this.seedActivity();
     if (this.state.page === "Dashboard") this.startKpiCount();
     this._actTimer = setInterval(() => { if (this.state.page === "Activity") this.tickActivity(); }, 700);
-    this._clockTimer = setInterval(() => { if (this.state.page === "Home") this.forceUpdate(); }, 1000);
     this._flapBoot = setInterval(() => this.forceUpdate(), 70);
     setTimeout(() => clearInterval(this._flapBoot), 1500);
     // One frame driver, fed by rAF where it runs and by a timer where it does not
@@ -1325,9 +1327,12 @@ export default class PulseLogic extends DCLogic {
     if (!this.searches){
       try { this.planSearch(); } catch (e) { this.searches = []; }
     }
-    this.bindGraphInput(this.canvas);
+    // The 3D neural map draws itself on the GPU and only reads the graph and
+    // searches from here; the 2D renderer and its pointer handling stay idle.
+    const is3d = this.canvas.hasAttribute("data-onto-3d");
+    if (!is3d) this.bindGraphInput(this.canvas);
     this.advance(dt);
-    this.drawGraph();
+    if (!is3d) this.drawGraph();
     this.refreshStats();
     this._beat = performance.now();
   }
@@ -1342,7 +1347,10 @@ export default class PulseLogic extends DCLogic {
         const t0 = performance.now();
         try { this.graphFrame(); } catch (e) { /* one bad frame must not stop the rest */ }
         const cost = performance.now() - t0;
-        this._gTimer = setTimeout(tick, Math.max(16, Math.min(60, cost * 1.2)));
+        // Off the ontology there is nothing to draw: check back once a second
+        // instead of waking the page sixty times a second.
+        const onGraph = this.state.page === "Records" && this.state.recSection === "ontology";
+        this._gTimer = setTimeout(tick, onGraph ? Math.max(16, Math.min(60, cost * 1.2)) : 1000);
       };
       this._gTimer = setTimeout(tick, 16);
       setTimeout(() => {
@@ -2359,6 +2367,12 @@ export default class PulseLogic extends DCLogic {
           progress: (s.delay > 0 ? 0 : pct) + "%"};
       }),
       run: () => { if ((st.ontoQuery || "").trim()) this.runOntoQuery(); else this.planSearch(); try { this.setState({gTick: Math.random()}); } catch (e) {} },
+      // Live handles for the 3D neural map: it reads these every frame.
+      scene: this._scene || (this._scene = {
+        graph: () => this.graph || (this.graph = buildGraph()),
+        searches: () => this.searches || [],
+        clusters: CLUSTERS.map(c => ({name: c[0], color: c[1]}))
+      }),
       legend: CLUSTERS.map((c, i) => ({label:c[0], bg:c[1],
         count: g ? String((this._legendCounts || (this._legendCounts = (() => {
           const c = new Array(CLUSTERS.length).fill(0);
@@ -2542,77 +2556,6 @@ export default class PulseLogic extends DCLogic {
     }));
     const queueTasks = (st.queue === "all" ? TASKS : TASKS.filter(t => t.queue.includes(st.queue))).map(decorateTask);
 
-    const APPROVALS = [
-      {id:"a1", title:"Purchase order PO-4471 — €14,280", subject:"Munster Plumbing Supplies · raised by Aoife Nolan", age:"18m", status:"awaiting you",
-       steps:[{who:"Aoife Nolan",state:"raised 08:54",dot:GREEN},{who:"Martin Kilbride",state:"pending",dot:AMBER}],
-       work:{kind:"table", label:"PURCHASE ORDER", viewLabel:"View order",
-         headline:"PO-4471 · Munster Plumbing Supplies", sub:"Delivery Thursday 18 Sep · terms 30 days",
-         cols:["Line","Qty","Unit","Total"], align:["left","right","right","right"],
-         rows:[["22mm copper tube — 3m","240","€38.40","€9,216.00"],
-               ["Compression elbow 22mm","400","€4.10","€1,640.00"],
-               ["Solder ring coupler 22mm","600","€2.85","€1,710.00"],
-               ["Flux paste 350g","60","€28.57","€1,714.00"]],
-         totals:[["Net","€14,280.00"],["VAT 23% (reverse charge)","€0.00"],["Payable","€14,280.00"]],
-         thinking:[["Checked stock levels","All four lines are below reorder point"],
-                   ["Matched pricing","Unit prices equal the June supplier agreement"],
-                   ["Checked commitments","Three lines are committed to Thursday's jobs"],
-                   ["Checked threshold","€4,280 over Martin's sign-off limit, so it routed here"]],
-         tools:[["records.read","read"],["invoices.read","read"],["approvals.route","write"]],
-         risk:"No alternative supplier quote on file. Last price change was 14 June."}},
-      {id:"a2", title:"Credit limit increase — Casey Builders", subject:"€10,000 → €18,000 · raised by Niamh Cronin", age:"Yesterday", status:"awaiting you",
-       steps:[{who:"Niamh Cronin",state:"raised 16:02",dot:GREEN},{who:"Aoife Nolan",state:"approved 16:40",dot:GREEN},{who:"Martin Kilbride",state:"pending",dot:AMBER}],
-       work:{kind:"diff", label:"RECORD CHANGE", viewLabel:"View change",
-         headline:"Casey Builders Ltd · account CB-0142", sub:"Three fields change on approval, one unchanged",
-         diff:[["Credit limit","€10,000","€18,000"],["Terms","30 days","45 days"],["Risk band","B","B"],["Reviewed","14 Mar 2026","Today"]],
-         thinking:[["Read payment history","24 invoices, 22 paid on time, average 27 days"],
-                   ["Checked exposure","Current balance €7,400 — 74% of the existing limit"],
-                   ["Checked open work","€21k of quoted work would be blocked by the current limit"],
-                   ["Checked policy","Increases above €15,000 need your decision"]],
-         tools:[["records.read","read"],["invoices.read","read"],["records.update","write"]],
-         risk:"One late payment in February, 19 days over. Cleared in full."}},
-      {id:"a4", title:"Proposal — Ballincollig retrofit €62,400", subject:"Drafted by Helios · raised by Niamh Cronin", age:"3h", status:"awaiting you",
-       steps:[{who:"Niamh Cronin",state:"raised 06:10",dot:GREEN},{who:"Martin Kilbride",state:"pending",dot:AMBER}],
-       work:{kind:"doc", label:"PROPOSAL · 4 PAGES", viewLabel:"Read proposal",
-         headline:"Heating retrofit — Ballincollig depot", sub:"Prepared for Casey Builders Ltd · valid 30 days",
-         doc:[["Scope","Replace the depot's two oil boilers with a cascaded air-source system, re-balance the existing circuit and fit weather compensation controls. Work is phased over two weekends so the yard keeps running."],
-              ["Approach","Week one strips the plant room and lands the new units on the existing plinth. Week two commissions the cascade and hands over with a 12-month monitoring window."],
-              ["Commercials","€62,400 fixed price, 30% on order, 40% on plant delivery, 30% on handover. Excludes making good to the render."],
-              ["Why us","We hold the maintenance contract on the Glanmire site and carry the same plant in stock, so lead time is three weeks rather than nine."]],
-         totals:[["Plant","€38,900.00"],["Labour","€18,100.00"],["Controls and commissioning","€5,400.00"],["Total","€62,400.00"]],
-         thinking:[["Pulled the site record","Two oil boilers, 2009, last serviced March"],
-                   ["Priced from live stock","Plant is in stock at the Cork branch"],
-                   ["Reused past wording","Lifted scope language from the Glanmire proposal you approved"],
-                   ["Left a gap","No allowance for asbestos survey — flagged below"]],
-         tools:[["records.read","read"],["files.read","read"],["email.send","external"]],
-         risk:"No asbestos survey allowance. If the plant room needs one, add roughly €1,200."}},
-      {id:"a5", title:"Payment run — 14 suppliers €48,920", subject:"Scheduled by Cash Watch · Friday 19 Sep", age:"1h", status:"awaiting you",
-       steps:[{who:"Cash Watch",state:"proposed 09:40",dot:GREEN},{who:"Martin Kilbride",state:"pending",dot:AMBER}],
-       work:{kind:"table", label:"PAYMENT RUN", viewLabel:"View run",
-         headline:"Run PR-0238 · 14 payments", sub:"Leaves the AIB current account on Friday 19 Sep",
-         cols:["Supplier","Due","Invoices","Amount"], align:["left","left","right","right"],
-         rows:[["Munster Plumbing Supplies","19 Sep","3","€18,240.00"],
-               ["Tyrrell Insulation","19 Sep","1","€9,110.00"],
-               ["Kelleher Haulage","20 Sep","4","€7,480.00"],
-               ["Cork Electrical Wholesale","19 Sep","2","€6,300.00"],
-               ["10 others","19–24 Sep","11","€7,790.00"]],
-         totals:[["Run total","€48,920.00"],["Account balance after","€61,380.00"],["Held back","€2,410.00"]],
-         thinking:[["Read the ledger","31 invoices due inside seven days"],
-                   ["Held two back","Tyrrell credit note unresolved, Dineen job in dispute"],
-                   ["Checked the balance","Run leaves €61,380, above your €50k floor"],
-                   ["Checked mandates","All 14 have current SEPA mandates on file"]],
-         tools:[["invoices.read","read"],["payments.read","read"],["bank.payment.create","external"]],
-         risk:"Two invoices held back total €2,410. They will age past 60 days if not paid next run."}},
-      {id:"a3", title:"Write-off — INV-10233 €412", subject:"Glanmire Mechanical · raised by Aoife Nolan", age:"2 days", status:"approved",
-       steps:[{who:"Aoife Nolan",state:"raised",dot:GREEN},{who:"Martin Kilbride",state:"approved",dot:GREEN}],
-       work:{kind:"diff", label:"WRITE-OFF", viewLabel:"View write-off",
-         headline:"INV-10233 · Glanmire Mechanical", sub:"Two fields change on approval",
-         diff:[["Status","Past due 94 days","Written off"],["Balance","€412.00","€0.00"]],
-         thinking:[["Checked the age","94 days past due, three chases sent"],
-                   ["Checked the account","Company dissolved 12 August"],
-                   ["Checked the amount","Below your €500 write-off threshold"]],
-         tools:[["invoices.read","read"],["invoices.update","write"]],
-         risk:"None. The counterparty no longer exists."}}
-    ];
     const bucketOf = (a) => a.status === "approved" ? "Decided"
       : a.steps.some(s => s.state === "pending" && s.who === "Martin Kilbride") ? "Awaiting you" : "Awaiting others";
     const APPROVAL_COUNTS = {"Awaiting you":0, "Awaiting others":0, "Decided":0};
@@ -3098,7 +3041,7 @@ export default class PulseLogic extends DCLogic {
       contextHint = "ADMIN · 13 AREAS";
       searchHint = "Search settings";
     } else if (page === "Activity"){
-      contextNav = [["all","Everything"],["people","People"],["ai","Agents"],["attention",(st.w - (st.railOpen ? 252 : 68)) < 1000 ? "Attention" : "Needs attention"]]
+      contextNav = [["all","Everything"],["people","People"],["ai","Agents"],["attention",(st.w - RAIL_W) < 1000 ? "Attention" : "Needs attention"]]
         .map(k => seg(k[1], st.actKpi === k[0], () => this.setState({actKpi:k[0]})));
       contextHint = st.actPaused ? "LIVE VIEW PAUSED" : "LIVE · EVENT LOG";
       searchHint = "Search the audit trail";
@@ -3828,7 +3771,7 @@ export default class PulseLogic extends DCLogic {
         const on = st.agentSpec.tint === t[0];
         return {label:t[1],
           style: "width:32px;height:32px;border-radius:var(--r-ctl,11px);cursor:pointer;padding:0;"
-            + "background:linear-gradient(160deg," + t[0] + ",#0b0d0f);"
+            + "background:" + t[0] + ";"
             + "transition:transform .2s var(--ease),border-color .2s var(--ease);"
             + (on ? "border:2px solid var(--accent);transform:scale(1.08)" : "border:1px solid var(--border)"),
           pick: () => this.setSpec({tint:t[0]})};
@@ -3954,10 +3897,8 @@ export default class PulseLogic extends DCLogic {
         ? "position:absolute;left:0;right:0;top:0;height:76px;z-index:3;pointer-events:none;background:var(--accent)"
         : "display:none",
       headerPillStyle: "display:flex;align-items:center;gap:4px;height:54px;padding:5px;box-sizing:border-box;max-width:100%;min-width:0;overflow:hidden;"
-        + ((contextNav.length <= 6 && (st.w - (st.railOpen ? 252 : 68) - 12) >= 780) ? "" : "width:fit-content;margin:0 auto;")
-        + "background:var(--surface);border:1px solid var(--border);border-radius:999px;"
-        + "backdrop-filter:blur(24px) saturate(1.4);-webkit-backdrop-filter:blur(24px) saturate(1.4);"
-        + "box-shadow:0 1px 0 rgba(255,255,255,.05) inset,0 10px 30px rgba(0,0,0,.28)",
+        + ((contextNav.length <= 6 && (st.w - RAIL_W - 12) >= 780) ? "" : "width:fit-content;margin:0 auto;")
+        + "border-radius:999px",
       headerStyle: "flex:none;display:grid;align-items:center;gap:14px;padding:14px 22px 12px;border-bottom:1px solid var(--border);"
         + "grid-template-columns:minmax(0,1fr) " + (mid ? "minmax(150px,340px)" : "44px") + " minmax(0,1fr)",
       barOpen: st.barOpen,
@@ -4007,15 +3948,15 @@ export default class PulseLogic extends DCLogic {
       setArrowB: "position:absolute;left:50%;top:50%;margin:-7.5px 0 0 -7.5px;"
         + "transform:translateX(" + (st.setBtnHover ? "0" : "-22px") + ");opacity:" + (st.setBtnHover ? "1" : "0") + ";"
         + "transition:transform .45s cubic-bezier(.22,.9,.16,1) " + (st.setBtnHover ? ".08s" : "0s") + ",opacity .3s var(--ease) " + (st.setBtnHover ? ".08s" : "0s"),
-      showTeam: (st.w - (st.railOpen ? 252 : 68)) >= 1000 || contextNav.length <= 3,
-      showTheme: (st.w - (st.railOpen ? 252 : 68)) >= 820 || contextNav.length <= 3,
-      tabPad: (st.w - (st.railOpen ? 252 : 68)) >= 1100 ? "0 18px" : (st.w - (st.railOpen ? 252 : 68)) >= 1000 ? "0 12px" : "0 10px",
-      _tabs: (() => { const tight = (st.w - (st.railOpen ? 252 : 68)) < 1000 && contextNav.length >= 4;
+      showTeam: (st.w - RAIL_W) >= 1000 || contextNav.length <= 3,
+      showTheme: (st.w - RAIL_W) >= 820 || contextNav.length <= 3,
+      tabPad: (st.w - RAIL_W) >= 1100 ? "0 18px" : (st.w - RAIL_W) >= 1000 ? "0 12px" : "0 10px",
+      _tabs: (() => { const tight = (st.w - RAIL_W) < 1000 && contextNav.length >= 4;
         contextNav.forEach(t => { t.showCount = !!t.count && !tight; }); return 0; })(),
-      tabsLoose: !((st.w - (st.railOpen ? 252 : 68)) < 1000 && contextNav.length >= 4),
-      tabsTight: (st.w - (st.railOpen ? 252 : 68)) < 1000 && contextNav.length >= 4,
-      tabActiveBg: ((st.w - (st.railOpen ? 252 : 68)) < 1000 && contextNav.length >= 4) ? "var(--surface-2)" : "none",
-      searchWrapFlex: (contextNav.length <= 6 && (st.w - (st.railOpen ? 252 : 68) - 12) >= 780) ? "1 1 auto" : "0 0 auto",
+      tabsLoose: !((st.w - RAIL_W) < 1000 && contextNav.length >= 4),
+      tabsTight: (st.w - RAIL_W) < 1000 && contextNav.length >= 4,
+      tabActiveBg: ((st.w - RAIL_W) < 1000 && contextNav.length >= 4) ? "var(--surface-2)" : "none",
+      searchWrapFlex: (contextNav.length <= 6 && (st.w - RAIL_W - 12) >= 780) ? "1 1 auto" : "0 0 auto",
       barLabel: st.barOpen ? "Collapse the bar" : "Expand the bar",
       barChevronStyle: "transition:transform .3s var(--ease);transform:rotate(" + (st.barOpen ? "0deg" : "180deg") + ")",
       toggleBar: () => this.setState(prev => ({barOpen: !prev.barOpen})),
@@ -4031,14 +3972,13 @@ export default class PulseLogic extends DCLogic {
       // width and offset, so long labels, counts or an overflowing group can't
       // push the pill off the tab it belongs to.
       navThumb: "position:absolute;left:0;top:0;bottom:0;width:0;z-index:0;pointer-events:none;border-radius:999px;opacity:0;"
-        + "background-color:var(--surface-2);box-shadow:0 1px 0 rgba(255,255,255,.05) inset,0 4px 12px rgba(0,0,0,.35);"
-        + "background-image:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,0) 55%);background-blend-mode:overlay;"
+        + "background-color:var(--lg-thumb,var(--surface-2));box-shadow:var(--lg-thumb-shadow,0 1px 0 rgba(255,255,255,.05) inset,0 4px 12px rgba(0,0,0,.35));"
         + "transition:transform .46s cubic-bezier(.22,.9,.16,1),width .46s cubic-bezier(.22,.9,.16,1),opacity .2s",
       navThumbKey: contextNav.map(t => (t.active ? "*" : "") + t.label).join("|"),
       searchStyle: "height:38px;justify-self:center;min-width:0;" + (mid ? "width:100%;padding:0 8px 0 15px;" : "width:44px;justify-content:center;padding:0;"),
       // The bar is one row: the fewer sub-nav segments a page has, the more of the
       // leftover width the search field takes.
-      searchExpanded: contextNav.length <= 6 && (st.w - (st.railOpen ? 252 : 68) - 12) >= 780,
+      searchExpanded: contextNav.length <= 6 && (st.w - RAIL_W - 12) >= 780,
       searchBarStyle: (() => {
         const segs = contextNav.length;
         // No min-width floor: when the sub-nav pill group is wide, the search
@@ -4047,14 +3987,14 @@ export default class PulseLogic extends DCLogic {
         const cap = segs <= 2 ? 520 : segs <= 4 ? 440 : 340;
         // A real floor so the label always fits — the sub-nav group is now
         // shrinkable, so this comes out of its slack, not out of an overflow.
-        const collapsed = !(segs <= 6 && (st.w - (st.railOpen ? 252 : 68) - 12) >= 780);
+        const collapsed = !(segs <= 6 && (st.w - RAIL_W - 12) >= 780);
         if (collapsed) return "flex:none;width:42px;height:42px;display:flex;align-items:center;justify-content:center;padding:0;margin:0 2px;"
-          + "background:var(--track);border:1px solid transparent;border-radius:999px;cursor:pointer;color:var(--body);"
+          + "background:var(--lg-well,var(--track));border:1px solid transparent;border-radius:999px;cursor:pointer;color:var(--body);"
           + "transition:border-color .2s var(--ease),color .2s var(--ease)";
         return "flex:1 1 auto;width:100%;min-width:0;max-width:" + cap + "px;height:42px;"
           + "display:flex;align-items:center;gap:9px;padding:0 6px 0 15px;margin:0 2px;"
-          + "background:var(--track);border:1px solid transparent;border-radius:999px;"
-          + "box-shadow:0 1px 2px rgba(0,0,0,.22) inset;"
+          + "background:var(--lg-well,var(--track));border:1px solid transparent;border-radius:999px;"
+          + "box-shadow:var(--lg-well-shadow,0 1px 2px rgba(0,0,0,.22) inset);"
           + "cursor:pointer;color:var(--body);"
           + "transition:border-color .2s var(--ease),color .2s var(--ease),background .2s var(--ease),max-width .3s var(--ease)";
       })(),
@@ -4082,7 +4022,7 @@ export default class PulseLogic extends DCLogic {
         return (live ? live + " AGENTS RUNNING" : "NO AGENTS RUNNING") + " · SYNCED 2 MIN AGO";
       })(),
       homeSubline: "Ask about any record, job or number you can see.",
-      approvalsPill: openKeys.length + " APPROVALS · €48,120 HELD",
+      approvalsPill: openKeys.length + " approvals · €48,120 held",
       showApprovalNote: openKeys.length > 0 && !st.approvalNoteHidden,
       dismissApprovalNote: () => this.setState({approvalNoteHidden:true}),
       /* Home canvas: a decorative layer the user can switch, scoped to the
@@ -4094,7 +4034,7 @@ export default class PulseLogic extends DCLogic {
           mist: "background:radial-gradient(52% 44% at 24% 22%, rgba(255,255,255,.07), transparent 70%), radial-gradient(56% 46% at 80% 76%, rgba(255,255,255,.05), transparent 72%)",
           grid: "background-image:linear-gradient(var(--border) 1px, transparent 1px),linear-gradient(90deg, var(--border) 1px, transparent 1px);background-size:56px 56px;mask-image:radial-gradient(62% 56% at 50% 46%, #000, transparent 78%);-webkit-mask-image:radial-gradient(62% 56% at 50% 46%, #000, transparent 78%)"
         };
-        const key = st.homeBg || "bloom";
+        const key = st.homeBg || "none";
         const def = BG_DEFS.find(b => b.id === key);
         const css = def ? def.css : (st.homeBgCss || bgs[key] || "");
         return "position:absolute;top:-24px;bottom:-24px;left:-24px;right:-24px;z-index:0;pointer-events:none;overflow:hidden;opacity:"
@@ -4103,7 +4043,7 @@ export default class PulseLogic extends DCLogic {
       bgMenuOpen: false,
       toggleBgMenu: () => this.setState({bgGalleryOpen:true, bgSpot:null}),
       bgGallery: (() => {
-        const cur = st.homeBg || "bloom";
+        const cur = st.homeBg || "none";
         const ups = st.bgUploads || [];
         const cats = ["Signature","Gradient","Abstract","Your photos"];
         const active = st.bgCat || "Signature";
@@ -4166,7 +4106,7 @@ export default class PulseLogic extends DCLogic {
                   ["mist","Mist","radial-gradient(circle at 40% 35%, rgba(255,255,255,.55), #16181a)"],
                   ["grid","Grid","repeating-linear-gradient(0deg,#2b2e2c 0 1px,#16181a 1px 4px)"],
                   ["none","None","#16181a"]].map(o => {
-        const on = (st.homeBg || "bloom") === o[0];
+        const on = (st.homeBg || "none") === o[0];
         return {label:o[1],
           style: "display:flex;align-items:center;gap:9px;width:100%;height:28px;padding:0 10px 0 7px;border:0;border-radius:var(--r-ctl,10px);cursor:pointer;font-size:12px;text-align:left;white-space:nowrap;transition:background .18s var(--ease),color .18s var(--ease);"
             + (on ? "background:var(--surface-2);color:var(--ink)" : "background:none;color:var(--dim)"),
@@ -4327,7 +4267,7 @@ export default class PulseLogic extends DCLogic {
       toggleNotifs: () => this.setState({showNotifs:!st.showNotifs}),
       /* Home: the widget rail steps away once a conversation starts, so the
          thread gets the full width — brought back on demand, not automatically. */
-      showRail: st.thread.length === 0 || st.chatRailPinned,
+      showRail: (st.thread.length === 0 || st.chatRailPinned) && st.w >= 1000,
       toggleChatRail: () => this.setState(prev => ({chatRailPinned: !prev.chatRailPinned})),
       chatRailLabel: st.chatRailPinned ? "Hide widgets" : "Widgets",
       chatScrollStyle: st.thread.length

@@ -1,0 +1,219 @@
+/* Home assistant: stage, core, task tabs, spawned pages, caption and chat bar. */
+
+.jv-stage{position:relative;height:100%;min-height:520px;overflow:hidden}
+.jv-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+/* The core artwork: placed and scaled from JS (transform only). */
+.jv-art{position:absolute;left:0;top:0;z-index:1;pointer-events:none;transform-origin:50% 50%;will-change:transform}
+
+
+/* ── Task tabs ──────────────────────────────────────────────────────── */
+.jv-tabs{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:4;display:flex;gap:8px;max-width:calc(100% - 32px);overflow-x:auto;scrollbar-width:none}
+.jv-tabwrap{position:relative;display:flex;align-items:center;flex:none;animation:jvTabIn .45s cubic-bezier(.32,1.24,.42,1) both}
+.jv-tabchip{height:36px;padding:0 34px 0 14px}
+.jv-tabwrap[data-active="1"] .jv-tabchip{background:rgba(255,255,255,.2);color:var(--ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 0 1px rgba(140,196,255,.35),0 4px 18px rgba(10,132,255,.25)}
+.jv-tabdot{width:6px;height:6px;border-radius:999px;background:rgba(255,255,255,.4)}
+.jv-tabwrap[data-active="1"] .jv-tabdot{background:#8cc4ff;box-shadow:0 0 8px #8cc4ff}
+.jv-tabx{position:absolute;right:6px;width:22px;height:22px;border:0;border-radius:999px;background:none;color:var(--dim);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.jv-tabx:hover{background:rgba(255,255,255,.14);color:var(--ink)}
+@keyframes jvTabIn{from{opacity:0;transform:translateY(-8px) scale(.9)}to{opacity:1;transform:none}}
+
+/* ── Spawned pages ──────────────────────────────────────────────────── */
+.jv-free{position:absolute;inset:0;z-index:3;pointer-events:none}
+.jv-free > *{pointer-events:auto}
+.jv-rail{position:absolute;left:0;right:0;z-index:3;display:flex;gap:12px;padding:0 20px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.jv-rail .jv-panel{position:relative;flex:none;scroll-snap-align:center}
+.jv-panel{position:absolute;display:flex;flex-direction:column;border-radius:24px;overflow:hidden;
+  transform-origin:var(--ox) var(--oy);animation:jvSpawn .62s cubic-bezier(.2,1.1,.3,1) both}
+.jv-panel[data-folding="1"]{animation:jvFold .3s cubic-bezier(.5,0,.8,.4) both}
+@keyframes jvSpawn{from{transform:scale(.06)}62%{transform:scale(1.015)}to{transform:none}}
+@keyframes jvFold{from{transform:none}to{transform:scale(.05)}}
+.jv-panel-head{flex:none;display:flex;align-items:center;gap:8px;padding:10px 16px 8px;border-bottom:1px solid var(--border)}
+.jv-panel-title{font-size:12.5px;font-weight:600;letter-spacing:-.1px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.jv-panel-body{flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;animation:jvFade .35s .28s both}
+@keyframes jvFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* Invoice page */
+.jv-doc{padding:12px 16px 14px;font-size:12px;color:var(--body)}
+.jv-doc-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.jv-doc-supplier{font-size:15px;font-weight:600;letter-spacing:-.3px;color:var(--ink)}
+.jv-doc-addr{margin-top:2px;font-size:11px;color:var(--faint)}
+.jv-due{flex:none;height:22px;display:inline-flex;align-items:center;padding:0 9px;border-radius:999px;background:rgba(255,255,255,.1);font-size:11px;font-weight:500;color:var(--body)}
+.jv-due-soon{background:rgba(255,159,10,.2);color:#ffc266}
+.jv-doc-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.jv-doc-meta div{font-size:11.5px;color:var(--ink);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jv-doc-meta span,.jv-doc-totals span{display:block;font-size:10.5px;color:var(--faint);margin-bottom:2px}
+.jv-doc-lines{margin-top:8px;border-top:1px solid var(--border)}
+.jv-doc-line{display:grid;grid-template-columns:1fr auto;gap:0 10px;padding:5px 0;line-height:1.35;border-bottom:1px solid rgba(255,255,255,.06)}
+.jv-doc-item{color:var(--ink)}
+.jv-doc-qty{grid-column:1;font-size:11px;color:var(--faint)}
+.jv-doc-amt{grid-column:2;grid-row:1 / span 2;align-self:center;color:var(--ink);font-variant-numeric:tabular-nums}
+.jv-doc-totals{display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:8px;margin-top:8px;font-variant-numeric:tabular-nums;color:var(--ink)}
+.jv-doc-total{font-size:15px;font-weight:600}
+
+/* Payment run */
+.jv-summary{padding:16px}
+.jv-summary-label{font-size:11.5px;color:var(--dim)}
+.jv-summary-total{margin-top:4px;font-size:30px;font-weight:600;letter-spacing:-1px;color:var(--ink);font-variant-numeric:tabular-nums}
+.jv-summary-rows{margin-top:10px}
+.jv-summary-row{display:grid;grid-template-columns:1fr auto auto;gap:12px;padding:7px 0;font-size:12.5px;color:var(--body);font-variant-numeric:tabular-nums}
+.jv-summary-due{color:var(--faint)}
+.jv-btn{width:100%;height:38px;margin-top:12px;border:0;border-radius:999px;background:var(--accent);color:#f5f7fa;font:inherit;font-size:13px;font-weight:600;cursor:pointer;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 4px 14px rgba(10,132,255,.35);transition:background .2s var(--ease),transform .15s var(--ease)}
+.jv-btn:hover{background:var(--accent-hover)}
+.jv-btn:active{transform:scale(.98)}
+.jv-btn-done,.jv-btn-done:hover{background:rgba(48,209,88,.22);color:#7ee6a0;box-shadow:inset 0 1px 0 rgba(255,255,255,.15);cursor:default}
+
+/* Research tab */
+.jv-research{padding:14px 16px 16px;font-size:12.5px;color:var(--body)}
+.jv-brief{margin:0;line-height:1.5;color:var(--ink)}
+.jv-counters{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.jv-counters div{padding:9px 10px;border-radius:14px;background:rgba(255,255,255,.07);font-size:10.5px;color:var(--faint)}
+.jv-counters b{display:block;font-size:19px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+.jv-steps{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:9px}
+.jv-steps li{display:flex;align-items:center;gap:10px;color:var(--faint);transition:color .3s var(--ease)}
+.jv-steps li[data-state="active"]{color:var(--ink)}
+.jv-steps li[data-state="done"]{color:var(--body)}
+.jv-step-mark{flex:none;width:14px;height:14px;border-radius:999px;border:1.5px solid rgba(255,255,255,.28)}
+.jv-steps li[data-state="active"] .jv-step-mark{border-color:#8cc4ff;border-top-color:transparent;animation:jvSpin .8s linear infinite}
+.jv-steps li[data-state="done"] .jv-step-mark{border:0;background:#30d158;box-shadow:inset 0 0 0 4px #1d7f3a}
+@keyframes jvSpin{to{transform:rotate(360deg)}}
+.jv-shortlist{margin-top:16px;animation:jvFade .4s both}
+.jv-shortlist-label{font-size:11px;color:var(--faint);margin-bottom:8px}
+.jv-van{padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.07);margin-bottom:8px}
+.jv-van[data-best="1"]{background:rgba(10,132,255,.2);box-shadow:inset 0 0 0 1px rgba(140,196,255,.35)}
+.jv-van-top{display:flex;justify-content:space-between;gap:10px}
+.jv-van-title{font-weight:600;color:var(--ink);min-width:0}
+.jv-van-price{flex:none;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+.jv-van-meta{margin-top:3px;font-size:11px;color:var(--dim)}
+.jv-van-note{margin-top:4px;font-size:11.5px;color:var(--body);line-height:1.45}
+
+/* Remote browser */
+.jv-browser{height:100%;display:flex;flex-direction:column;padding:0 10px 10px}
+.jv-chrome{display:flex;align-items:flex-end;gap:10px;padding:8px 4px 0}
+.jv-lights{display:flex;gap:6px;padding-bottom:9px}
+.jv-lights i{width:10px;height:10px;border-radius:999px;background:#ff5f57}
+.jv-lights i:nth-child(2){background:#febc2e}
+.jv-lights i:nth-child(3){background:#28c840}
+.jv-tab{display:flex;align-items:center;gap:7px;max-width:70%;height:30px;padding:0 12px;border-radius:10px 10px 0 0;background:rgba(236,240,248,.94);color:#1d2230;font-size:11.5px}
+.jv-favicon{flex:none;width:15px;height:15px;border-radius:4px;background:#0a84ff;color:#f5f7fa;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.jv-tab-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.jv-urlbar{display:flex;align-items:center;gap:8px;height:34px;padding:0 10px;background:rgba(236,240,248,.94);color:#5b6475;border-radius:0 10px 0 0}
+.jv-url{flex:1;min-width:0;font-size:11.5px;color:#1d2230;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.jv-caret{display:inline-block;width:1px;height:12px;margin-left:1px;vertical-align:-2px;background:#0a84ff;animation:blink 1s step-end infinite}
+.jv-live{flex:none;display:flex;align-items:center;gap:6px;font-size:10.5px;color:#0a6fe0;font-weight:600}
+.jv-live::before{content:"";width:6px;height:6px;border-radius:999px;background:#0a84ff;animation:breathe 1.4s ease-in-out infinite}
+.jv-page{position:relative;flex:1;min-height:0;overflow:hidden;background:#f7f8fb;border-radius:0 0 12px 12px;color:#1d2230}
+.jv-page-inner{transition:transform .5s cubic-bezier(.3,.7,.2,1)}
+.jv-scan{position:absolute;left:0;right:0;top:0;height:60px;pointer-events:none;
+  background:linear-gradient(180deg,rgba(10,132,255,0),rgba(10,132,255,.14),rgba(10,132,255,0));animation:jvScan 1.1s linear infinite}
+@keyframes jvScan{from{transform:translateY(-60px)}to{transform:translateY(520px)}}
+.jv-browser-foot{flex:none;padding:8px 4px 0;font-size:10.5px;color:var(--faint)}
+.jv-web{padding:14px 16px;font-size:12px}
+.jv-web-h{font-size:17px;font-weight:700;letter-spacing:-.3px;margin-bottom:10px}
+.jv-search-box{height:34px;display:flex;align-items:center;padding:0 14px;border-radius:999px;background:#fff;box-shadow:0 1px 4px rgba(20,30,60,.15);margin-bottom:14px;color:#1d2230}
+.jv-result{padding:8px 8px;margin:0 -8px 4px;border-radius:8px}
+.jv-result[data-hot="1"]{animation:jvRead 2.2s ease both}
+.jv-result:nth-child(3){animation-delay:.5s}
+.jv-result:nth-child(4){animation-delay:1s}
+@keyframes jvRead{0%,100%{background:transparent}30%,55%{background:rgba(10,132,255,.1)}}
+.jv-result-url{font-size:10.5px;color:#4d5566}
+.jv-result-title{margin-top:2px;font-size:14px;color:#1a4fd6}
+.jv-result-snip{margin-top:2px;color:#4d5566;line-height:1.4}
+.jv-filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.jv-filters span{height:24px;display:inline-flex;align-items:center;padding:0 10px;border-radius:999px;background:#e3ecfb;color:#1a4fd6;font-size:11px;font-weight:600}
+.jv-listing{display:flex;align-items:center;gap:10px;padding:8px;margin-bottom:6px;border-radius:10px;background:#fff;box-shadow:0 1px 2px rgba(20,30,60,.08);transition:box-shadow .15s,background .15s}
+.jv-listing[data-read="1"]{box-shadow:0 0 0 2px rgba(10,132,255,.55)}
+.jv-listing[data-match="1"]{background:#eaf6ee}
+.jv-thumb{flex:none;width:58px;height:40px;border-radius:7px;background:linear-gradient(135deg,#c9d3e3,#9aa8c0);color:#fff;font-size:9px;font-weight:700;letter-spacing:.06em;display:flex;align-items:center;justify-content:center;text-transform:uppercase}
+.jv-listing-body{flex:1;min-width:0;display:flex;flex-direction:column}
+.jv-listing-title{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.jv-listing-meta{font-size:11px;color:#4d5566}
+.jv-listing-price{flex:none;font-weight:700}
+.jv-hero-img{height:130px;border-radius:10px;margin-bottom:12px;background:linear-gradient(135deg,#dfe6f2,#aab7cc);display:flex;align-items:flex-end;padding:10px;color:#fff;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,.3)}
+.jv-specs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.jv-specs div{padding:8px 10px;border-radius:8px;background:#fff;box-shadow:0 1px 2px rgba(20,30,60,.08)}
+.jv-specs span{display:block;font-size:10.5px;color:#4d5566}
+.jv-toast{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);height:32px;display:flex;align-items:center;padding:0 14px;border-radius:999px;background:#1d2230;color:#f5f7fa;font-size:12px;font-weight:600;animation:jvFade .3s both}
+
+/* ── Caption and chat bar ───────────────────────────────────────────── */
+.jv-bottom{position:absolute;left:0;right:0;bottom:0;z-index:5;display:flex;flex-direction:column;align-items:center;padding:0 22px 22px;pointer-events:none}
+.jv-bottom > *{pointer-events:auto}
+.jv-caption{max-width:560px;text-align:center;margin-bottom:14px;min-height:20px}
+.jv-hello{font-size:22px;font-weight:600;letter-spacing:-.5px;color:var(--ink)}
+.jv-suggest{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:12px}
+.jv-you{font-size:12.5px;color:var(--dim)}
+.jv-reply{margin-top:4px;font-size:15px;line-height:1.45;color:var(--ink);text-shadow:0 1px 12px rgba(2,8,28,.6)}
+.jv-composer-wrap{width:100%;max-width:580px}
+.jv-composer-wrap textarea{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.jv-k{width:20px;height:20px;border-radius:6px;background:linear-gradient(180deg,#3ea0ff,#0a6fe0);display:flex;align-items:center;justify-content:center;color:#f5f7fa;font-size:10.5px;font-weight:600}
+.jv-mic{width:36px;height:36px;padding:0;justify-content:center;flex:none}
+.jv-mic[data-on="1"]{background:rgba(255,69,58,.3);color:#ffb3ad}
+.lg-send:disabled{opacity:.55;cursor:default}
+
+@media (prefers-reduced-motion:reduce){
+  .jv-panel,.jv-panel[data-folding="1"],.jv-panel-body,.jv-tabwrap,.jv-shortlist{animation:none}
+  .jv-scan,.jv-caret{animation:none}
+}
+
+/* ── Today panels ───────────────────────────────────────────────────── */
+.jv-today{padding:12px 16px 14px;font-size:12.5px;color:var(--body)}
+.jv-today-meta{font-size:11px;color:var(--faint)}
+.jv-brief-lines{display:flex;flex-direction:column;gap:7px}
+.jv-brief-line{line-height:1.4;color:var(--ink)}
+.jv-brief-line span{display:block;font-size:10.5px;color:var(--faint);margin-bottom:1px}
+.jv-brief-verdict{margin:0 0 10px;padding-bottom:10px;border-bottom:1px solid var(--border);font-size:13.5px;line-height:1.45;color:var(--ink);font-weight:500}
+.jv-brief-by{margin-top:10px}
+.jv-meet-title{font-size:16px;font-weight:600;letter-spacing:-.3px;color:var(--ink)}
+.jv-meet-when{margin-top:3px;font-size:13px;color:#8cc4ff;font-variant-numeric:tabular-nums}
+.jv-meet-people{display:flex;align-items:center;gap:0;margin-top:12px}
+.jv-meet-person{width:26px;height:26px;margin-right:-6px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;
+  font-size:9.5px;font-weight:600;color:var(--ink);background:rgba(255,255,255,.16);box-shadow:0 0 0 2px rgba(16,24,44,.6)}
+.jv-meet-people .jv-today-meta{margin-left:14px}
+.jv-meet-agenda{margin:12px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:5px;color:var(--ink)}
+.jv-meet-agenda li::marker{color:var(--faint)}
+.jv-list{list-style:none;margin:0;padding:6px 10px 10px}
+.jv-task{display:flex;align-items:center;gap:10px;padding:8px 6px;border-bottom:1px solid rgba(255,255,255,.06)}
+.jv-task:last-child,.jv-notice:last-child{border-bottom:0}
+.jv-task-body{flex:1;min-width:0}
+.jv-task-title{font-size:12.5px;font-weight:500;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.jv-task[data-done="1"] .jv-task-title{color:var(--faint);text-decoration:line-through}
+.jv-check{flex:none;width:18px;height:18px;padding:0;border-radius:999px;border:1.5px solid rgba(255,255,255,.34);background:none;color:transparent;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:background .2s var(--ease),border-color .2s var(--ease),color .2s var(--ease)}
+.jv-check:hover{border-color:#8cc4ff}
+.jv-check[aria-pressed="true"]{background:#30d158;border-color:#30d158;color:#0b2a16}
+.jv-check:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.jv-notice{padding:8px 6px;border-bottom:1px solid rgba(255,255,255,.06)}
+.jv-notice-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
+.jv-notice-kind{font-size:10.5px;font-weight:600;color:#8cc4ff}
+.jv-notice[data-critical="1"] .jv-notice-kind{color:#ff8a80}
+
+/* ── Clock: lock-screen date and time in a tall, thin stencil face ────────── */
+.jv-clock{position:absolute;z-index:2;pointer-events:none;color:#f5f7fa;font-family:"Saira Stencil One","Big Shoulders Stencil Display",var(--ui);
+  font-variant-numeric:tabular-nums;text-shadow:0 2px 22px rgba(2,10,34,.3);
+  transition:opacity .5s cubic-bezier(.2,.8,.2,1),transform .6s cubic-bezier(.2,.8,.2,1)}
+/* Asleep: Home is just this, centred. */
+.jv-clock-hero{left:50%;top:calc((100% - 112px) * .47);display:flex;flex-direction:column;align-items:center;text-align:center;
+  transform:translate(-50%,-50%)}
+.jv-clock-hero .jv-clock-date{font-size:clamp(14px,1.55vw,26px);font-weight:400;letter-spacing:.01em;line-height:1}
+.jv-clock-time{font-family:"Allerta Stencil","Saira Stencil One",var(--ui)}
+.jv-clock-hero .jv-clock-time{margin-top:.1em;font-size:clamp(68px,7.8vw,132px);font-weight:400;line-height:1;letter-spacing:-.02em;-webkit-text-stroke:.034em currentColor}
+/* Awake: it shrinks off toward the top-right corner. */
+.jv-clock-hero[data-on="0"]{opacity:0;transform:translate(-50%,-50%) translate(30vw,-34vh) scale(.14)}
+.jv-clock-corner{top:6px;right:24px;display:flex;flex-direction:column;align-items:flex-end;text-align:right}
+.jv-clock-corner .jv-clock-time{font-size:26px;font-weight:400;line-height:1;letter-spacing:0}
+.jv-clock-corner .jv-clock-date{margin-top:3px;font-size:9.5px;font-weight:400;letter-spacing:.02em;opacity:.85}
+.jv-clock-corner[data-on="0"]{opacity:0;transform:translate(-40px,30px) scale(1.6)}
+.jv-clock-corner[data-on="1"]{transition-delay:.12s}
+[data-theme="light"] .jv-clock{color:#16181c;text-shadow:0 1px 12px rgba(255,255,255,.4)}
+
+/* The core stays out of sight until Home wakes, then rises into place. */
+/* Fades only: the core measures its own box, so scaling this wrapper would
+   throw its particles off-centre. The rise comes from its layout instead. */
+/* Asleep: navy-and-orange silk behind everything, like a lock screen. */
+.jv-silk{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0;transition:opacity .7s cubic-bezier(.2,.8,.2,1)}
+.jv-silk{background:#0a1424}
+.jv-silk img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 40%}
+.jv-silk[data-on="1"]{opacity:1}
+.jv-core{position:absolute;inset:0;z-index:1;pointer-events:none;transition:opacity .55s cubic-bezier(.2,.8,.2,1) .18s}
+.jv-core[data-on="0"]{opacity:0;transition-delay:0s}
+@media (prefers-reduced-motion:reduce){.jv-clock,.jv-core,.jv-silk{transition:none}}

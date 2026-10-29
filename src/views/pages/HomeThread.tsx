@@ -76,7 +76,7 @@ export default function HomeThread({ v }: Props) {
               {m?.isUser && (
                 <>
                   <div style={{"display":"flex","justifyContent":"flex-end"}}>
-                    <div style={{"maxWidth":"76%","padding":"12px 18px","background":"var(--surface-2)","border":"1px solid var(--border)","borderRadius":"var(--card-r,18px) 20px 6px 20px","fontSize":"14.5px","lineHeight":"1.55","backdropFilter":"blur(24px)"}}>
+                    <div style={{"maxWidth":"76%","padding":"10px 16px","background":"var(--accent)","color":"var(--on-accent)","border":"0","borderRadius":"20px","fontSize":"14.5px","lineHeight":"1.5","boxShadow":"inset 0 1px 0 rgba(255,255,255,.22),0 4px 14px rgba(10,132,255,.25)"}}>
                       {txt(m?.text)}
                     </div>
                   </div>

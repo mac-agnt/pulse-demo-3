@@ -1,0 +1,50 @@
+/* Ontology: the 3D neural map. It draws straight onto the glass card, so it
+   reads as part of the app: ice-blue light, the app's own type colours, and
+   only a soft pool of accent light behind the core. */
+
+.nm{position:absolute;inset:0;overflow:hidden;border-radius:inherit;
+  background:
+    radial-gradient(30% 34% at 50% 50%,rgba(10,132,255,.14),transparent 70%),
+    radial-gradient(closest-side at 50% 50%,rgba(4,14,44,.34),rgba(4,14,44,.14) 62%,transparent)}
+/* Light themes: white glow would vanish on a white card, so they keep a deep
+   tinted window for the map to glow in. */
+[data-theme="light"] .nm,[data-theme="warm"] .nm,[data-theme="mist"] .nm,[data-theme="sand"] .nm{
+  background:radial-gradient(90% 90% at 50% 50%,#16233f 0%,#0e1830 60%,#0a1226 100%)}
+.nm-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab;touch-action:none}
+.nm-canvas:active{cursor:grabbing}
+
+.nm-label,.nm-core{position:absolute;left:0;top:0;pointer-events:none;will-change:transform,opacity;
+  display:flex;flex-direction:column;align-items:center;text-align:center;white-space:nowrap;
+  font-family:var(--ui);color:#f5f7fa;text-shadow:0 1px 3px rgba(4,14,40,.55),0 0 14px rgba(4,14,40,.35);transition:opacity .25s linear}
+.nm-label b{margin-top:5px;font-size:12px;font-weight:600;letter-spacing:.01em}
+.nm-label-dot{width:7px;height:7px;border-radius:999px}
+.nm-label-count{margin-top:1px;font-size:11px;font-weight:500;color:rgba(240,244,250,.84);font-variant-numeric:tabular-nums}
+/* The one-line description only shows for the cluster in focus; nine of them at once overlap. */
+.nm-label-about{display:none;font-size:10.5px;color:rgba(235,240,250,.62)}
+.nm-label[data-focus="1"] .nm-label-about{display:block}
+.nm-label[data-focus="1"] b{color:#fff}
+.nm-core b{font-size:13px;font-weight:600;color:#fff}
+.nm-core span{font-size:10.5px;color:rgba(235,240,250,.66)}
+
+.nm-tip{position:absolute;left:0;top:0;pointer-events:none;opacity:0;transition:opacity .15s linear;
+  padding:6px 10px;border-radius:var(--r-sm,10px);background:var(--tooltip,rgba(24,32,52,.82));border:1px solid var(--border);
+  color:var(--tooltip-ink,#f5f7fa);font-size:11.5px;white-space:nowrap;box-shadow:0 8px 24px rgba(2,10,40,.3);
+  -webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+
+.nm-hud{position:absolute;pointer-events:none;font-size:11px;color:var(--faint)}
+.nm-hud-tl{left:20px;top:16px;display:flex;flex-direction:column;gap:2px}
+.nm-hud-tl b{font-size:13px;font-weight:600;color:var(--ink)}
+.nm-hud-tl span{color:var(--dim)}
+.nm-hud-bl{left:20px;bottom:14px}
+.nm-fail{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:13px}
+
+@media (prefers-reduced-motion:reduce){ .nm-label,.nm-core,.nm-tip{transition:none} }
+
+/* Relationship verbs on the arcs between clusters. */
+.nm-rel{position:absolute;left:0;top:0;pointer-events:none;opacity:0;will-change:transform,opacity;
+  display:flex;flex-direction:column;align-items:center;gap:1px;white-space:nowrap;
+  padding:3px 8px;border-radius:999px;background:rgba(6,18,48,.42);border:1px solid rgba(190,220,255,.16);
+  font-family:var(--ui);font-size:10.5px;font-weight:500;font-style:italic;letter-spacing:.01em;color:rgba(240,246,255,.92);
+  text-shadow:0 1px 3px rgba(4,14,40,.5);transition:opacity .25s linear}
+.nm-rel span{font-style:normal;font-size:9.5px;font-weight:400;color:rgba(225,235,250,.6)}
+@media (prefers-reduced-motion:reduce){ .nm-rel{transition:none} }
